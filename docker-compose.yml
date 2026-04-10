@@ -1,0 +1,48 @@
+services:
+  api:
+    build: .
+    image: cms-node-app
+    container_name: cms-api
+    command: npm start
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
+  worker:
+    build: .
+    image: cms-node-app
+    container_name: cms-worker
+    command: npm run worker
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
+  postgres:
+    image: postgres:15
+    container_name: cms-postgres
+    environment:
+      POSTGRES_USER: cms_user
+      POSTGRES_PASSWORD: cms_pass
+      POSTGRES_DB: cms_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: cms-redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
